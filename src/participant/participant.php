@@ -160,7 +160,7 @@ $activitesInscrites = $stmtInscrit->fetchAll(PDO::FETCH_COLUMN);
         </ul>
 
         <!-- Liste des activités inscrites -->
-        <h2 class="text-xl md:text-3xl text-center font-bold mb-2 mt-6">Vos activités inscrites :</h2>
+        <h2 class="text-xl md:text-3xl text-center font-bold mb-2 mt-6">Voici les activités auxquelles vous vous êtes inscrit</h2>
         <ul class="flex flex-row gap-2">
             <?php
             $queryInscrit = "SELECT a.* FROM activité a 
