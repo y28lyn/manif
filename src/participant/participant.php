@@ -93,14 +93,10 @@ $activitesInscrites = $stmtInscrit->fetchAll(PDO::FETCH_COLUMN);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../public/css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <title>Connexion</title>
+    <title>Participant</title>
 </head>
 <body>
     <header>      
-        <form method="post" class="absolute w-full z-50 top-0 left-0 mt-6 px-6">
-                <button type="submit" name="deconnexion" class="bg-gray-950/90 hover:bg-black/90 text-white p-2 rounded duration-300">Déconnexion</button>
-        </form>
         <div class="bg-cover bg-center min-h-screen flex items-center overflow-hidden relative">
             <div class="absolute inset-0">
                 <img
@@ -113,55 +109,67 @@ $activitesInscrites = $stmtInscrit->fetchAll(PDO::FETCH_COLUMN);
                 />
             </div>
             <div class="absolute inset-0 bg-black/80 block from-black to-transparent"></div>
-            <div class="container mx-auto text-center relative">
-                <h1 class="text-3xl md:text-4xl font-extrabold mb-4 px-6 md:px-0 text-white">
-                    Participant
-                </h1>
-                <p class="text-xl text-gray-200 mb-8 px-6 md:px-64">Participez activement à notre manifestation lucrative pour soutenir une cause qui compte ! Chaque contribution compte, chaque action fait la différence.</p>
-                <div class="space-x-4">
-                    <button 
-                        onclick="scrollToNextSection()"
-                        class="text-white w-25 outline p-1 rounded transition ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105 duration-300"
-                    >
-                        <span class="p-5">Lire plus</span>
-                    </button>
+            <div class="relative text-white container flex flex-col justify-center p-6 mx-auto sm:py-12 lg:py-24 lg:flex-row">
+                <div class="flex items-center justify-center lg:mt-0 h-72 sm:h-80 lg:h-96 xl:h-112 2xl:h-128">
+                    <img src="https://doodleipsum.com/600/flat?i=6e4195d35692e33a35c0967106748b23" alt="" class="object-contain h-72 sm:h-80 lg:h-96 xl:h-112 2xl:h-128">
+                </div>
+                <div class="flex flex-col justify-center p-6 text-center rounded-sm lg:max-w-md xl:max-w-lg lg:text-left">
+                    <h1 class="text-4xl md:text-5xl font-bold leadi sm:text-6xl">Participez
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">à nos</span> activités !
+                    </h1>
+                    <p class="mt-6 mb-8 text-lg sm:mb-12">Plongez dans l'action ! Participez à nos activités dès maintenant.</p>
+                    <div class="flex flex-col space-y-4 sm:items-center sm:justify-center sm:flex-row sm:space-y-0 sm:space-x-4 lg:justify-start">
+                        <button 
+                            onclick="scrollToNextSection()"
+                            class="w-fit mx-auto md:w-full px-8 py-3 text-lg font-semibold rounded bg-gradient-to-r to-emerald-600 from-sky-400 text-gray-50 transition ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105 duration-300"
+                        >
+                            <span class="p-5">Lire plus</span>
+                        </button>
+                        <form method="post">
+                                <button type="submit" name="deconnexion" class="w-fit mx-auto md:w-full px-8 py-3 text-lg font-semibold border rounded border-slate-200 transition ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105 duration-300">Déconnexion</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main id="main" class="container h-screen p-6 bg-[#000302] text-white">
+    <main id="main" class="p-6 bg-[#000302] text-white">
         <!-- Liste des activités disponibles -->
-        <h2 class="text-xl md:text-3xl text-center font-bold mb-2">Inscrivez-vous à nos activités pour soutenir notre cause !</h2>
-        <ul class="flex flex-row gap-2">
+        <h1 class="mb-4 text-3xl font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Les activités</span> disponibles</h1>
+        <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Explorez les nombreuses activités disponibles et rejoignez-nous dans notre engagement commun pour un changement positif.</p>
+        <ul class="flex flex-col md:flex-row gap-6 mt-4">
             <?php
             while ($activite = $stmtActivites->fetch(PDO::FETCH_ASSOC)) {
                 $activiteId = $activite['id_activité'];
-                echo "<li class='p-6 w-1/3 h-[30vh] shadow-lg rounded bg-[#eef] text-[#000302]'>";
-                echo "<p>{$activite['NomAct']} - {$activite['Description']}</p>";
-
+                echo "<li class='md:w-1/3 w-[95%] mx-auto'> <div class='bg-indigo-700 shadow-lg rounded-lg p-5 overflow-hidden'>";
+                echo "<div class='relative pt-[3rem] md:h-[42vh] pb-14'>
+                        <div class='text-xs font-bold uppercase text-green-400 tracking-widest mb-2'>{$activite['NomAct']}</div>
+                        <h3 class='text-2xl font-extrabold text-indigo-50 leading-snug mb-2'>{$activite['Description']}</h3>
+                      </div>";
                 // Vérifier si l'utilisateur est déjà inscrit à cette activité
                 $dejaInscrit = in_array($activiteId, $activitesInscrites);
 
                 // Déplacer le formulaire à la fin du <li>
-                echo "<form method='post'><input type='hidden' name='activiteId' value='{$activiteId}'>";
+                echo "<form method='post' class='relative text-right'><input type='hidden' name='activiteId' value='{$activiteId}'>";
                 if (!$dejaInscrit) {
                     // Afficher le bouton "S'inscrire" seulement si l'utilisateur n'est pas déjà inscrit
-                    echo "<button type='submit' class='bg-blue-500 hover:bg-blue-600 text-white mt-1 mb-3 p-2 rounded'>S'inscrire</button>";
+                    echo "<button type='submit' class='inline-flex justify-center items-center bg-green-400 hover:bg-green-500 text-white p-2 rounded transition duration-150'>S'inscrire</button>";
                 } else {
                     // L'utilisateur est déjà inscrit, afficher un message sans le bouton
-                    echo "<button class='bg-slate-500 text-white mt-1 mb-3 p-2 rounded cursor-default items-end justify-end' disabled>Déjà inscrit</button>";
+                    echo "<button type='button' class='inline-flex justify-center items-center bg-slate-400 text-white p-2 rounded cursor-default'>Déjà inscrit</button>";
                 }
                 echo "</form>";
 
-                echo "</li>";
+                echo "</div></div></li>";
             }
             ?>
         </ul>
 
         <!-- Liste des activités inscrites -->
-        <h2 class="text-xl md:text-3xl text-center font-bold mb-2 mt-6">Voici les activités auxquelles vous vous êtes inscrit</h2>
-        <ul class="flex flex-row gap-2">
+        <h1 class="mb-4 mt-12 text-3xl font-extrabold text-gray-900 dark:text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">Les activités</span> auxquelles vous êtes inscrits</h1>
+        <p class="text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400">Explorez les activités auxquelles vous êtes inscrits, contribuant ainsi à notre cause commune. Plongez-vous dans une journée d'enthousiasme et d'engagement.</p>
+        <ul class="flex flex-col md:flex-row gap-6 mt-4">
             <?php
             $queryInscrit = "SELECT a.* FROM activité a 
                             INNER JOIN participation p ON a.id_activité = p.id_activite 
@@ -172,8 +180,12 @@ $activitesInscrites = $stmtInscrit->fetchAll(PDO::FETCH_COLUMN);
 
             while ($activiteInscrite = $stmtInscrit->fetch(PDO::FETCH_ASSOC)) {
                 $activiteIdInscrite = $activiteInscrite['id_activité'];
-                echo "<li class='p-6 w-1/3 h-[30vh] shadow-lg rounded bg-[#eef] text-[#000302]'><p>{$activiteInscrite['NomAct']} - {$activiteInscrite['Description']}</p>";
-                echo "<form method='post'><input type='hidden' name='desinscriptionId' value='{$activiteIdInscrite}'><button type='submit' class='bg-red-500 hover:bg-red-600 text-white mt-1 mb-3 p-2 rounded'>Se désinscrire</button></form></li>";
+                echo "<li class='md:w-1/3 w-[95%] mx-auto'> <div class='bg-indigo-900 shadow-lg rounded-lg p-5 overflow-hidden'>";
+                echo "<div class='relative pt-[3rem] md:h-[42vh] pb-14'>
+                        <div class='text-xs font-bold uppercase text-teal-400 tracking-widest mb-2'>{$activiteInscrite['NomAct']}</div>
+                        <h3 class='text-2xl font-extrabold text-indigo-50 leading-snug mb-2'>{$activiteInscrite['Description']}</h3>
+                      </div>";                
+                echo "<form method='post' class='relative text-right'><input type='hidden' name='desinscriptionId' value='{$activiteIdInscrite}'><button type='submit' class='inline-flex justify-center items-center bg-red-400 hover:bg-red-500 text-white p-2 rounded transition duration-150'>Se désinscrire</button></form></li>";
             }
             ?>
         </ul>
