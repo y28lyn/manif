@@ -46,54 +46,79 @@
                 $stmtUser->execute();
                 // Valider la transaction
                 $pdo->commit();
-                echo '<p class="text-green-500">Inscription réussie ! Redirection vers la page de connexion...</p>';
-                header("refresh:3;url=login.php"); // Rediriger après 3 secondes
+                echo '<script>alert("Inscription réussie ! Redirection vers la page de connexion...")</script>';
+                header("refresh:1;url=login.php"); // Rediriger après 1 secondes
             } catch (Exception $e) {
                 // En cas d'échec, annuler la transaction
                 $pdo->rollBack();
-                echo '<p class="text-red-500">Une erreur est survenue lors de l\'inscription.</p>';
+                echo '<script>alert("Une erreur est survenue lors de l\'inscription.")</script>';
             }
         }
     ?>
-    <div class="flex h-screen">
+    <div class="flex justify-center h-screen bg-[#393646]">
         <!-- Panneau gauche -->
-        <div class="hidden md:flex items-center justify-center flex-1 bg-slate-700 text-black">
-            <div class="max-w-md text-center">
-                <img src="https://doodleipsum.com/600/flat?i=79f653fe0d821dcf0641932480645c43" alt="" class="w-full">
+        <div class="hidden bg-cover lg:block lg:w-2/3" style="background-image: url(https://images.unsplash.com/photo-1532635241-17e820acc59f?q=80&w=2015&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)">
+            <div class="flex items-center h-full px-20 bg-black bg-opacity-80">
+                <div>
+                    <h2 class="text-4xl font-bold text-white">Renaissance urbaine</h2>
+                    
+                    <p class="max-w-xl mt-3 text-gray-300">Devenez un maillon actif de la Renaissance Urbaine ! Inscrivez-vous dès maintenant sur notre site pour contribuer à la construction de quartiers dynamiques et solidaires. Ensemble, façonnons un avenir urbain où l'unité et la créativité prospèrent. Rejoignez-nous dans cette belle aventure dès aujourd'hui !</p>
+                </div>
             </div>
-        </div>
+        </div>  
         <!-- Panneau droit -->
-        <div class="w-full bg-slate-800 lg:w-1/2 flex items-center justify-center">
-            <div class="max-w-md w-full p-6">
-                <h1 class="text-3xl font-semibold mb-1 md:mb-3 text-white text-center">Inscription</h1>
-                <form action="" method="post" class="">
-                    <div class="mb-2">
-                        <label for="nom" class="block text-sm font-medium text-gray-300">Nom</label>
-                        <input type="text" name="nom" required class="mt-1 p-2 w-full border rounded-md transition-colors duration-300">
-                    </div>
-                    <div class="mb-2">
-                        <label for="prenom" class="block text-sm font-medium text-gray-300">Prénom</label>
-                        <input type="text" name="prenom" required class="mt-1 p-2 w-full border rounded-md transition-colors duration-300">
-                    </div>
-                    <div class="mb-2">
-                        <label for="mail" class="block text-sm font-medium text-gray-300">Email</label>
-                        <input type="email" name="mail" required class="mt-1 p-2 w-full border rounded-md transition-colors duration-300">
-                    </div>
-                    <div class="mb-2">
-                        <label for="login" class="block text-sm font-medium text-gray-300">Login</label>
-                        <input type="text" name="login" required class="mt-1 p-2 w-full border rounded-md transition-colors duration-300">
-                    </div>
-                    <div class="mb-2">
-                        <label for="mdp" class="block text-sm font-medium text-gray-300">Mot de passe</label>
-                        <input type="password" name="mdp" required class="mt-1 p-2 w-full border rounded-md transition-colors duration-300">
-                    </div>
-                    <div class="flex flex-row gap-2">
-                        <button type="submit" class="w-1/2 bg-slate-200 text-black p-2 rounded-md hover:bg-slate-400 focus:bg-slate-400 transition-colors duration-300">S'inscrire</button>
-                        <button href="login.php" name="deconnexion" class="w-1/2 bg-red-500 hover:bg-red-600 text-white p-2 rounded duration-300" onclick="window.location.href='login.php';">Annuler</button>
-                    </div>
-                </form>
+        <div class="flex items-center w-full max-w-md px-6 mx-auto lg:w-2/6">
+            <div class="flex-1">
+                <div class="text-center">
+                    <h2 class="text-4xl font-bold text-center text-white">Renaissance urbaine</h2>
+                    
+                    <p class="mt-3 text-gray-200">Inscrivez-vous pour accéder à notre site</p>
+                </div>
+                <div class="mt-8">
+                    <form action="" method="post">
+                        <div class="flex flex-row gap-5">
+                            <div>
+                                <div>
+                                    <label for="nom" class="block mb-2 text-sm text-gray-200 mt-2">Nom</label>
+                                    <input type="text" name="nom"  placeholder="Votre nom" class="block w-full px-4 py-2 mt-2 bg-white border rounded-md placeholder-gray-600bg-gray-900 text-gray-900 border-gray-700 focus:border-[#F4EEE0] focus:ring-[#F4EEE0] focus:outline-none focus:ring focus:ring-opacity-40" />
+                                </div>
+                                <div>
+                                    <label for="prenom" class="block mb-2 text-sm text-gray-200 mt-2">Prenom</label>
+                                    <input type="text" name="prenom" placeholder="Votre prenom" class="block w-full px-4 py-2 mt-2 bg-white border rounded-md placeholder-gray-600bg-gray-900 text-gray-900 border-gray-700 focus:border-[#F4EEE0] focus:ring-[#F4EEE0] focus:outline-none focus:ring focus:ring-opacity-40" />
+                                </div>
+                                <div>
+                                    <label for="mail" class="block mb-2 text-sm text-gray-200 mt-2">E-mail</label>
+                                    <input type="email" name="mail" placeholder="Votre e-mail" class="block w-full px-4 py-2 mt-2 bg-white border rounded-md placeholder-gray-600bg-gray-900 text-gray-900 border-gray-700 focus:border-[#F4EEE0] focus:ring-[#F4EEE0] focus:outline-none focus:ring focus:ring-opacity-40" />
+                                </div>
+                            </div>
+                            <div>
+                                <div>
+                                    <label for="login" class="block mb-2 text-sm text-gray-200 mt-2">Login</label>
+                                    <input type="text" name="login" placeholder="Votre login" class="block w-full px-4 py-2 mt-2 bg-white border rounded-md placeholder-gray-600bg-gray-900 text-gray-900 border-gray-700 focus:border-[#F4EEE0] focus:ring-[#F4EEE0] focus:outline-none focus:ring focus:ring-opacity-40" />
+                                </div>
+                                <div>
+                                    <label for="mdp" class="block mb-2 text-sm text-gray-200 mt-2">Mot de passe</label>
+                                    <input type="password" name="mdp" placeholder="Votre mot de passe" class="block w-full px-4 py-2 mt-2 bg-white border rounded-md placeholder-gray-600bg-gray-900 text-gray-900 border-gray-700 focus:border-[#F4EEE0] focus:ring-[#F4EEE0] focus:outline-none focus:ring focus:ring-opacity-40" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-row gap-5">
+                            <button
+                                type="submit"
+                                class="w-1/2 px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-[#6D5D6E] rounded-md hover:bg-[#4F4557] focus:outline-none focus:bg-[#4F4557] focus:ring focus:ring-[#F4EEE0] focus:ring-opacity-50">
+                                S'inscrire
+                            </button>
+                            <a 
+                                href="login.php" 
+                                name="deconnexion" 
+                                class="w-1/2 px-4 py-2 tracking-wide text-center text-white transition-colors duration-200 transform bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:bg-red-600 focus:ring focus:ring-[#F4EEE0] focus:ring-opacity-50">
+                            Annuler
+                        </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>    
+    </div>
 </body>
 </html>
