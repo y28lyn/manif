@@ -145,7 +145,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                     echo "<select name='creneauId' class=' p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
                     while ($creneau = $stmtCreneaux->fetch(PDO::FETCH_ASSOC)) {
                         $selected = ($creneau['id_creneau'] == $activiteResponsable['id_creneau']) ? 'selected' : '';
-                        echo "<option value='{$creneau['id_creneau']}' {$selected} class='bg-[#6D5D6E]'>{$creneau['heure_debut']} - {$creneau['heure_fin']}</option>";
+                        echo "<option value='{$creneau['id_creneau']}' {$selected} class='bg-[#4F4557]'>{$creneau['heure_debut']} - {$creneau['heure_fin']}</option>";
                     }
                     echo "</select>";
     

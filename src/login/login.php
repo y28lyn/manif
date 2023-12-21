@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         startSessionAndRedirect($user['role'], $user['id_participant']);
     } else {
         // Gestion de l'échec de connexion
-        echo "Identifiants invalides.";
+        echo "<script>alert('Identifiants invalides.')</script>";
     }
 }
 ?>
