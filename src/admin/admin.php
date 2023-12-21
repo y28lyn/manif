@@ -36,26 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyCreneau'])) {
 
 // Traitement du formulaire pour modifier une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
-    $activityId = $_POST['activiteId'];
-    $newActivityTitle = $_POST['newActivityTitle'];
-    $newActivityDescription = $_POST['newActivityDescription'];
+    // Vérifier si 'activiteId' est défini dans $_POST
+    if (isset($_POST['activiteId'])) {
+        $activiteId = $_POST['activiteId'];
+        $newActivityTitle = $_POST['newActivityTitle'];
+        $newActivityDescription = $_POST['newActivityDescription'];
 
-    // Vous devez ajuster la requête UPDATE en fonction de votre structure de base de données
-    $queryUpdateActivity = "UPDATE activité SET NomAct = :newActivityTitle, Description = :newActivityDescription WHERE id_activité = :activityId";
-    $stmtUpdateActivity = $pdo->prepare($queryUpdateActivity);
-    $stmtUpdateActivity->bindParam(':newActivityTitle', $newActivityTitle);
-    $stmtUpdateActivity->bindParam(':newActivityDescription', $newActivityDescription);
-    $stmtUpdateActivity->bindParam(':activityId', $activityId);
+        // Vous devez ajuster la requête UPDATE en fonction de votre structure de base de données
+        $queryUpdateActivity = "UPDATE activité SET NomAct = :newActivityTitle, Description = :newActivityDescription WHERE id_activité = :activiteId";
+        $stmtUpdateActivity = $pdo->prepare($queryUpdateActivity);
+        $stmtUpdateActivity->bindParam(':newActivityTitle', $newActivityTitle);
+        $stmtUpdateActivity->bindParam(':newActivityDescription', $newActivityDescription);
+        $stmtUpdateActivity->bindParam(':activiteId', $activiteId);
 
-    if ($stmtUpdateActivity->execute()) {
-        echo "<script>alert('Activité modifiée avec succès : {$newActivityTitle}');</script>";
-        // Redirection après le traitement réussi
-        header("refresh:20;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 secondes
-        exit(); // Assurez-vous de terminer l'exécution du script après la redirection        
+        if ($stmtUpdateActivity->execute()) {
+            echo "<script>alert('Activité modifiée avec succès : {$newActivityTitle}');</script>";
+            // Redirection après le traitement réussi
+            header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
+            exit(); // Assurez-vous de terminer l'exécution du script après la redirection        
+        } else {
+            echo "<script>alert('Erreur lors de la modification de l\'activité.');</script>";
+        }
     } else {
-        echo "<script>alert('Erreur lors de la modification de l\'activité.');</script>";
+        // Gérer le cas où 'activiteId' n'est pas défini dans $_POST
+        echo "<script>alert('Erreur : identifiant de l\'activité non spécifié.');</script>";
     }
 }
+
 
 // Traitement du formulaire de modification du participant
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyParticipant'])) {
@@ -245,6 +252,22 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
         <div class="container mx-auto px-6 pt-6">
             <h1 class="mb-4 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#6D5D6E]">Les activités</span> disponibles</h1>
             <p class="text-lg font-normal lg:text-xl text-gray-400">Parcourez notre vaste éventail d'activités captivantes, soigneusement sélectionnées pour offrir une diversité d'expériences.</p>
+
+            
+            <form class="mt-2">   
+                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                    </div>
+                    <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Mockups, Logos..." required>
+                    <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+                </div>
+            </form>
+
+
             <ul class="flex flex-col md:flex-row gap-6 mt-4">
                 <?php
                 while ($activiteResponsable = $stmtActivitesResponsable->fetch(PDO::FETCH_ASSOC)) {
@@ -253,8 +276,9 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                             <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>{$activiteResponsable['NomAct']}</div>
                             <div class='h-[1px] w-[98%] bg-white my-3'></div>
                           </div>";   
-                           
+
                     echo "<form method='post' class='flex flex-col gap-2'>";
+                    echo "<input type='hidden' name='activiteId' value='{$activiteResponsable['id_activité']}'>";
                     echo "<input type='text' name='newActivityTitle' value='{$activiteResponsable['NomAct']}' placeholder='Nouveau titre' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
                     echo "<textarea name='newActivityDescription' placeholder='Nouvelle description' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>{$activiteResponsable['Description']}</textarea>";
                     echo "<button type='submit' name='modifyActivity' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Activité</button>";
@@ -280,11 +304,25 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                 ?>
             </div>
         </div>
-    
+
         <!-- Liste des participants -->
         <div class="container mx-auto px-6">
             <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#4F4557]">Les participants</span> inscrits au site</h1>
             <p class="text-lg font-normal lg:text-xl text-gray-400">Explorez la communauté dynamique de participants inscrits sur notre site.</p>
+
+            <form class="mt-2">   
+                <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                        <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                        </svg>
+                    </div>
+                    <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Mockups, Logos..." required>
+                    <button type="submit" class="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+                </div>
+            </form>
+
             <ul class="flex flex-col md:grid grid-cols-2 gap-12 mt-4">
                 <?php
                 // Un tableau pour stocker les activités de chaque participant
