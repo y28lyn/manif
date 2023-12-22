@@ -91,6 +91,7 @@ $activitesInscrites = $stmtInscrit->fetchAll(PDO::FETCH_COLUMN);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/128/5928/5928517.png">
     <link rel="stylesheet" href="../../public/css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Participant</title>

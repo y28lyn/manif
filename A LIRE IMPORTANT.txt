@@ -1,0 +1,23 @@
+A LIRE IMPORTANT :
+
+Le projet est hébergé au : https://manif-ilyes.000webhostapp.com/
+
+Pour lancer le projet en local il faut installer nodeJS sur son pc ensuite une fois le projet mit dans htdocs il faut ouvrir 
+son vscode dans le dossier du projet puis un terminal survscode et faire la commande suivante (sinon il n'y aura pas de css):
+npm -i
+
+Liste des logins :
+admin root
+resp root
+i.beirade root
+j.benhadj root
+
+Listes des tâches restantes :
+- Barre de recherche à faire marcher
+- Système de tri pour les activités et les participants
+- Responsable qui doit être lié à son actiivté
+- Système de pièces pour participer aux activités
+- Admin qui doit pouvoir : 
+	- Créer des activités
+	- Mettre ou enlever le rôle "responsable" à un utilisateur
+- Ne pas pouvoir créer deux utilisateur avec le même mail / login
