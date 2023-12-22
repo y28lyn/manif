@@ -2,8 +2,8 @@ A LIRE IMPORTANT :
 
 Le projet est hébergé au : https://manif-ilyes.000webhostapp.com/
 
-Pour lancer le projet en local il faut installer nodeJS sur son pc ensuite une fois le projet mit dans htdocs il faut ouvrir 
-son vscode dans le dossier du projet puis un terminal survscode et faire la commande suivante (sinon il n'y aura pas de css):
+Si jamais il n'y a pas de CSS sur le projet en local il faut installer nodeJS sur son pc ensuite une fois le projet mit dans htdocs il faut ouvrir 
+son vscode dans le dossier du projet puis un terminal survscode et faire la commande suivante :
 npm -i
 
 Liste des logins :
