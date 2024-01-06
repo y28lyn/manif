@@ -34,6 +34,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyCreneau'])) {
     }
 }
 
+
+// Traitement du formulaire pour créer une activité
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createActivity'])) {
+    $newActivityTitle = $_POST['newActivityTitle'];
+    $newActivityDescription = $_POST['newActivityDescription'];
+
+    // Vous devez ajuster la requête INSERT en fonction de votre structure de base de données
+    $queryCreateActivity = "INSERT INTO activité (NomAct, Description) VALUES (:newActivityTitle, :newActivityDescription)";
+    $stmtCreateActivity = $pdo->prepare($queryCreateActivity);
+    $stmtCreateActivity->bindParam(':newActivityTitle', $newActivityTitle);
+    $stmtCreateActivity->bindParam(':newActivityDescription', $newActivityDescription);
+
+    if ($stmtCreateActivity->execute()) {
+        echo "<script>alert('Activité créée avec succès : {$newActivityTitle}');</script>";
+        // Redirection après le traitement réussi
+        header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
+        exit(); // Assurez-vous de terminer l'exécution du script après la redirection
+    } else {
+        echo "<script>alert('Erreur lors de la création de l\'activité.');</script>";
+    }
+}
+
 // Traitement du formulaire pour modifier une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
     // Vérifier si 'activiteId' est défini dans $_POST
@@ -267,10 +289,21 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                 </div>
             </form>
 
-            <ul class="flex flex-col md:flex-row gap-6 mt-4">
+            <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">            
+                <!-- Formulaire pour créer une activité -->
+                <form method="post" class="flex flex-col gap-2 bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                    <div class='relative md:h-[2.5em]'>
+                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Crée une activité</div>
+                        <div class='h-[1px] w-[98%] bg-white my-3'></div>
+                    </div>
+                    <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                    <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]"></textarea>
+                    <button type="submit" name="createActivity" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Créer Activité</button>
+                </form>
+
                 <?php
                 while ($activiteResponsable = $stmtActivitesResponsable->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<li class='md:w-1/3 w-[95%] mx-auto'><div class='bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden'>";
+                    echo "<li class='w-[95%] mx-auto'><div class='bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden'>";
                     echo "<div class='relative md:h-[2.5em]'>
                             <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>{$activiteResponsable['NomAct']}</div>
                             <div class='h-[1px] w-[98%] bg-white my-3'></div>
