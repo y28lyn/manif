@@ -39,22 +39,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyCreneau'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createActivity'])) {
     $newActivityTitle = $_POST['newActivityTitle'];
     $newActivityDescription = $_POST['newActivityDescription'];
+    $resp = $_POST['responsableId'];
+    $creneau = $_POST['creneauId'];
 
     // Vous devez ajuster la requête INSERT en fonction de votre structure de base de données
-    $queryCreateActivity = "INSERT INTO activité (NomAct, Description) VALUES (:newActivityTitle, :newActivityDescription)";
+    $queryCreateActivity = "INSERT INTO activité (NomAct, Description, num_resp) VALUES (:newActivityTitle, :newActivityDescription, :resp)";
     $stmtCreateActivity = $pdo->prepare($queryCreateActivity);
     $stmtCreateActivity->bindParam(':newActivityTitle', $newActivityTitle);
     $stmtCreateActivity->bindParam(':newActivityDescription', $newActivityDescription);
+    $stmtCreateActivity->bindParam(':resp', $resp);
 
     if ($stmtCreateActivity->execute()) {
-        echo "<script>alert('Activité créée avec succès : {$newActivityTitle}');</script>";
-        // Redirection après le traitement réussi
-        header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
-        exit(); // Assurez-vous de terminer l'exécution du script après la redirection
+        // Récupérer l'ID de l'activité que vous venez de créer
+        $lastActivityID = $pdo->lastInsertId();
+
+        // Insérer le créneau lié à l'activité
+        $queryInsertCreneau = "INSERT INTO avoir (id_activite, id_creneau) VALUES (:idActivite, :creneau)";
+        $stmtInsertCreneau = $pdo->prepare($queryInsertCreneau);
+        $stmtInsertCreneau->bindParam(':idActivite', $lastActivityID);
+        $stmtInsertCreneau->bindParam(':creneau', $creneau);
+
+        if ($stmtInsertCreneau->execute()) {
+            echo "<script>alert('Activité créée avec succès : {$newActivityTitle}');</script>";
+            // Redirection après le traitement réussi
+            header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
+            exit(); // Assurez-vous de terminer l'exécution du script après la redirection
+        } else {
+            echo "<script>alert('Erreur lors de l\'insertion du créneau de l\'activité.');</script>";
+        }
     } else {
         echo "<script>alert('Erreur lors de la création de l\'activité.');</script>";
     }
 }
+
 
 // Traitement du formulaire pour modifier une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
@@ -271,10 +288,54 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
     </header>
 
     <main id="main" class="p-6 py-12 bg-[#000500] text-white">
+        <!-- Liste des créations / affectations -->
+        <div class="container mx-auto px-6 pb-6">
+            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#4F4557]">Les créations</span> et affectations</h1>
+            <p class="text-lg font-normal lg:text-xl text-gray-400">Créez des activités et créneaux puis affecter leurs des responsables.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                <!-- Formulaire pour créer une activité -->
+                <form method="post" class="flex flex-col bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                    <div class='relative md:h-[2.5em]'>
+                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Crée une activité</div>
+                        <div class='h-[1px] w-[98%] bg-white my-3'></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <p class="text-md font-semibold mb-1">Titre</p>
+                        <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                        <p class="text-md font-semibold my-1">Description</p>
+                        <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]"></textarea>
+                        <p class="text-md font-semibold my-1">Responsable</p>
+                        <select name="responsableId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                            <!-- Vous devez ajuster la requête SELECT pour récupérer les responsables disponibles -->
+                            <?php
+                            $queryResponsables = "SELECT * FROM responsable";
+                            $stmtResponsables = $pdo->query($queryResponsables);
+                            while ($responsable = $stmtResponsables->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='{$responsable['num_resp']}'>{$responsable['Nom']} {$responsable['Prenom']}</option>";
+                            }
+                            ?>
+                        </select>
+                        <p class="text-md font-semibold my-1">Créneau</p>
+                        <select name="creneauId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                            <!-- Vous devez ajuster la requête SELECT pour récupérer les créneaux disponibles -->
+                            <?php
+                            $queryCreneaux = "SELECT * FROM creneau";
+                            $stmtCreneaux = $pdo->query($queryCreneaux);
+                            while ($creneau = $stmtCreneaux->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='{$creneau['id_creneau']}'>{$creneau['heure_debut']} - {$creneau['heure_fin']}</option>";
+                            }
+                            ?>
+                        </select>
+                        <button type="submit" name="createActivity" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-2">Créer Activité</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Liste des activités et modification de leur créneau -->
-        <div class="container mx-auto px-6 pt-6">
+        <div class="container mx-auto px-6">
             <h1 class="mb-4 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#6D5D6E]">Les activités</span> disponibles</h1>
-            <p class="text-lg font-normal lg:text-xl text-gray-400">Parcourez notre vaste éventail d'activités captivantes, soigneusement sélectionnées pour offrir une diversité d'expériences.</p>
+            <p class="text-lg font-normal lg:text-xl text-gray-400">Modifier ou supprimer les activités.</p>
 
             <form class="mt-2">   
                 <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">Search</label>
@@ -285,22 +346,11 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                         </svg>
                     </div>
                     <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-[#F4EEE0] focus:border-[#F4EEE0]" placeholder="Rechercher des activités..." required>
-                    <button type="submit" class="text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
+                    <button type="submit" class="md:block hidden text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
                 </div>
             </form>
 
             <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">            
-                <!-- Formulaire pour créer une activité -->
-                <form method="post" class="flex flex-col gap-2 bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
-                    <div class='relative md:h-[2.5em]'>
-                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Crée une activité</div>
-                        <div class='h-[1px] w-[98%] bg-white my-3'></div>
-                    </div>
-                    <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
-                    <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]"></textarea>
-                    <button type="submit" name="createActivity" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Créer Activité</button>
-                </form>
-
                 <?php
                 while ($activiteResponsable = $stmtActivitesResponsable->fetch(PDO::FETCH_ASSOC)) {
                     echo "<li class='w-[95%] mx-auto'><div class='bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden'>";
@@ -340,7 +390,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
         <!-- Liste des participants -->
         <div class="container mx-auto px-6">
             <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#4F4557]">Les participants</span> inscrits au site</h1>
-            <p class="text-lg font-normal lg:text-xl text-gray-400">Explorez la communauté dynamique de participants inscrits sur notre site.</p>
+            <p class="text-lg font-normal lg:text-xl text-gray-400">Modifier les informations d'un participant, le banir d'une activité ou du site.</p>
 
             <form class="mt-2">   
                 <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">Search</label>
@@ -351,11 +401,11 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                         </svg>
                     </div>
                     <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-[#F4EEE0] focus:border-[#F4EEE0]" placeholder="Rechercher des participants..." required>
-                    <button type="submit" class="text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
+                    <button type="submit" class="md:block hidden text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
                 </div>
             </form>
 
-            <ul class="flex flex-col md:grid grid-cols-2 gap-12 mt-4">
+            <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                 <?php
                 // Un tableau pour stocker les activités de chaque participant
                 $participantActivities = array();
@@ -389,7 +439,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                     echo "<input type='text' name='newParticipantEmail' value='{$activities[0]['mail']}' placeholder='Nouveau e-mail' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
                     echo "<input type='text' name='newLogin' value='{$activities[0]['login']}' placeholder='Nouveau login' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
                     echo "<input type='text' name='newPassword' value='{$activities[0]['mdp']}' placeholder='Nouveau mot de passe' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<button type='submit' name='modifyParticipant' class='bg-blue-500 hover:bg-blue-600 text-white p-2 rounded'>Modifier Participant</button>";
+                    echo "<button type='submit' name='modifyParticipant' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Participant</button>";
                     echo "</form>";
                     echo "<div class='h-[0.5px] w-[98%] bg-white my-3'></div>";
 
