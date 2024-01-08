@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyCreneau'])) {
     }
 }
 
-
 // Traitement du formulaire pour créer une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createActivity'])) {
     $newActivityTitle = $_POST['newActivityTitle'];
@@ -72,6 +71,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createActivity'])) {
     }
 }
 
+// Traitement du formulaire pour créer un créneau
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createCreneau'])) {
+    $newCreneauHeureDebut = $_POST['newCreneauHeureDebut'];
+    $newCreneauHeureFin = $_POST['newCreneauHeureFin'];
+
+    // Vous devez ajuster la requête INSERT en fonction de votre structure de base de données
+    $queryCreateCreneau = "INSERT INTO creneau (heure_debut, heure_fin) VALUES (:newCreneauHeureDebut, :newCreneauHeureFin)";
+    $stmtCreateCreneau = $pdo->prepare($queryCreateCreneau);
+    $stmtCreateCreneau->bindParam(':newCreneauHeureDebut', $newCreneauHeureDebut);
+    $stmtCreateCreneau->bindParam(':newCreneauHeureFin', $newCreneauHeureFin);
+
+    if ($stmtCreateCreneau->execute()) {
+        echo "<script>alert('Créneau créé avec succès de {$newCreneauHeureDebut} à {$newCreneauHeureFin}.');</script>";
+        // Redirection après le traitement réussi
+        header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
+        exit(); // Assurez-vous de terminer l'exécution du script après la redirection
+    } else {
+        echo "<script>alert('Erreur lors de la création du créneau. Veuillez vérifier les champs saisis.');</script>";
+    }
+}
 
 // Traitement du formulaire pour modifier une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
@@ -101,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
         echo "<script>alert('Erreur : identifiant de l\'activité non spécifié.');</script>";
     }
 }
-
 
 // Traitement du formulaire de modification du participant
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyParticipant'])) {
@@ -300,11 +318,11 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                         <div class='h-[1px] w-[98%] bg-white my-3'></div>
                     </div>
                     <div class="flex flex-col">
-                        <p class="text-md font-semibold mb-1">Titre</p>
+                        <label for="titre" class="text-md font-semibold mb-1">Titre</label>
                         <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
-                        <p class="text-md font-semibold my-1">Description</p>
+                        <label for="description" class="text-md font-semibold my-1">Description</label>
                         <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]"></textarea>
-                        <p class="text-md font-semibold my-1">Responsable</p>
+                        <label for="responsable" class="text-md font-semibold my-1">Responsable</label>
                         <select name="responsableId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
                             <!-- Vous devez ajuster la requête SELECT pour récupérer les responsables disponibles -->
                             <?php
@@ -315,7 +333,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                             }
                             ?>
                         </select>
-                        <p class="text-md font-semibold my-1">Créneau</p>
+                        <label for="creneau" class="text-md font-semibold my-1">Créneau</label>
                         <select name="creneauId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
                             <!-- Vous devez ajuster la requête SELECT pour récupérer les créneaux disponibles -->
                             <?php
@@ -326,7 +344,23 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                             }
                             ?>
                         </select>
-                        <button type="submit" name="createActivity" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-2">Créer Activité</button>
+                        <button type="submit" name="createActivity" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-2">Créer l'activité</button>
+                    </div>
+                </form>
+
+                <form method="post" class="flex flex-col bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                    <div class='relative md:h-[2.5em]'>
+                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Créer un créneau</div>
+                        <div class='h-[1px] w-[98%] bg-white my-3'></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="heure_debut" class="text-md font-semibold my-1">Heure de début</label>
+                        <input type="time" id="heure_debut" name="newCreneauHeureDebut" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]" required><br>
+
+                        <label for="heure_fin" class="text-md font-semibold my-1">Heure de fin</label>
+                        <input type="time" id="heure_fin" name="newCreneauHeureFin" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]" required><br>
+
+                        <button type="submit" name="createCreneau" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-2 md:mt-28">Ajouter le créneau</button>
                     </div>
                 </form>
             </div>
