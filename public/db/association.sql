@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 22 déc. 2023 à 17:16
+-- Généré le : mer. 10 jan. 2024 à 20:39
 -- Version du serveur : 10.4.27-MariaDB
 -- Version de PHP : 8.2.0
 
@@ -40,7 +40,7 @@ CREATE TABLE `activité` (
 
 INSERT INTO `activité` (`id_activité`, `NomAct`, `Description`, `num_resp`) VALUES
 (14, 'Tennis', 'Faites un match de tennis!', 1),
-(15, 'GP Explorer', 'Observer des streamers s\'affronter dans une course effrénée !', 2),
+(15, 'GP Explorer', 'Observer des streamers saffronter dans une course effrénée !', 1),
 (16, 'Bowling', 'Jouez au bowling !', 1);
 
 -- --------------------------------------------------------
@@ -59,8 +59,8 @@ CREATE TABLE `avoir` (
 --
 
 INSERT INTO `avoir` (`id_activite`, `id_creneau`) VALUES
-(14, 1),
-(15, 1),
+(14, 2),
+(15, 6),
 (16, 1);
 
 -- --------------------------------------------------------
@@ -81,7 +81,8 @@ CREATE TABLE `creneau` (
 
 INSERT INTO `creneau` (`id_creneau`, `heure_debut`, `heure_fin`) VALUES
 (1, '06:00:00', '10:00:00'),
-(2, '09:00:00', '12:00:00');
+(2, '09:00:00', '12:00:00'),
+(6, '13:00:00', '15:30:00');
 
 -- --------------------------------------------------------
 
@@ -144,8 +145,7 @@ CREATE TABLE `responsable` (
 --
 
 INSERT INTO `responsable` (`num_resp`, `Nom`, `Prenom`) VALUES
-(1, 'Lovecraft', 'Karl'),
-(2, 'Johnson', 'Anna');
+(1, 'Connor', 'James');
 
 -- --------------------------------------------------------
 
@@ -158,19 +158,20 @@ CREATE TABLE `user` (
   `login` varchar(20) NOT NULL,
   `mdp` varchar(30) NOT NULL,
   `role` varchar(255) DEFAULT NULL,
-  `id_participant` int(11) DEFAULT NULL
+  `id_participant` int(11) DEFAULT NULL,
+  `id_resp` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Déchargement des données de la table `user`
 --
 
-INSERT INTO `user` (`id_user`, `login`, `mdp`, `role`, `id_participant`) VALUES
-(1, 'admin', 'root', 'admin', NULL),
-(7, 'i.beirade', 'root', 'participant', 8),
-(9, 'a.benhadj', 'root', 'participant', 10),
-(10, 'resp', 'root', 'responsable', NULL),
-(11, 'j.benhadj', 'root', 'participant', 11);
+INSERT INTO `user` (`id_user`, `login`, `mdp`, `role`, `id_participant`, `id_resp`) VALUES
+(1, 'admin', 'root', 'admin', NULL, NULL),
+(7, 'i.beirade', 'root', 'participant', 8, NULL),
+(9, 'a.benhadj', 'root', 'participant', 10, NULL),
+(10, 'resp_connor', 'root', 'responsable', NULL, 1),
+(11, 'j.benhadj', 'root', 'participant', 11, NULL);
 
 --
 -- Index pour les tables déchargées
@@ -222,7 +223,8 @@ ALTER TABLE `responsable`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id_user`),
-  ADD KEY `fk_user_participant` (`id_participant`);
+  ADD KEY `fk_user_participant` (`id_participant`),
+  ADD KEY `fk_user_responsable` (`id_resp`);
 
 --
 -- AUTO_INCREMENT pour les tables déchargées
@@ -232,13 +234,13 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT pour la table `activité`
 --
 ALTER TABLE `activité`
-  MODIFY `id_activité` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id_activité` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT pour la table `creneau`
 --
 ALTER TABLE `creneau`
-  MODIFY `id_creneau` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id_creneau` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT pour la table `participant`
@@ -250,7 +252,7 @@ ALTER TABLE `participant`
 -- AUTO_INCREMENT pour la table `participation`
 --
 ALTER TABLE `participation`
-  MODIFY `id_part` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id_part` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- AUTO_INCREMENT pour la table `responsable`
@@ -293,7 +295,8 @@ ALTER TABLE `participation`
 -- Contraintes pour la table `user`
 --
 ALTER TABLE `user`
-  ADD CONSTRAINT `fk_user_participant` FOREIGN KEY (`id_participant`) REFERENCES `participant` (`num_participant`);
+  ADD CONSTRAINT `fk_user_participant` FOREIGN KEY (`id_participant`) REFERENCES `participant` (`num_participant`),
+  ADD CONSTRAINT `fk_user_responsable` FOREIGN KEY (`id_resp`) REFERENCES `responsable` (`num_resp`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

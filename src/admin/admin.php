@@ -92,6 +92,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createCreneau'])) {
     }
 }
 
+// Traitement du formulaire pour créer un responsable
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['createResponsable'])) {
+    $newRespName = $_POST['newRespName'];
+    $newRespFirstName = $_POST['newRespFirstName'];
+    $newRespLogin = $_POST['newRespLogin'];
+    $newRespPassword = $_POST['newRespPassword'];
+
+    // Vous devez ajuster la requête INSERT en fonction de votre structure de base de données
+    $queryCreateResponsable = "INSERT INTO responsable (Nom, Prenom) VALUES (:newRespName, :newRespFirstName)";
+    $stmtCreateResponsable = $pdo->prepare($queryCreateResponsable);
+    $stmtCreateResponsable->bindParam(':newRespName', $newRespName);
+    $stmtCreateResponsable->bindParam(':newRespFirstName', $newRespFirstName);
+
+    if ($stmtCreateResponsable->execute()) {
+        // Récupérer l'ID du responsable que vous venez de créer
+        $lastResponsableID = $pdo->lastInsertId();
+
+        // Insérer le nouvel utilisateur lié au responsable
+        $queryInsertUser = "INSERT INTO user (login, mdp, id_resp, role) VALUES (:newRespLogin, :newRespPassword, :lastResponsableID, 'responsable')";
+        $stmtInsertUser = $pdo->prepare($queryInsertUser);
+        $stmtInsertUser->bindParam(':newRespLogin', $newRespLogin);
+        $stmtInsertUser->bindParam(':newRespPassword', $newRespPassword);
+        $stmtInsertUser->bindParam(':lastResponsableID', $lastResponsableID);
+
+        if ($stmtInsertUser->execute()) {
+            // Succès
+            echo "<script>alert('Responsable {$newRespName} {$newRespFirstName} créé avec succès.');</script>";
+            // Redirection après le traitement réussi
+            header("refresh:0.2;url={$_SERVER['PHP_SELF']}"); // Rediriger après 1 seconde
+            exit(); // Assurez-vous de terminer l'exécution du script après la redirection
+        } else {
+            // Gestion de l'erreur d'insertion de l'utilisateur
+            echo "Erreur lors de la création de l'utilisateur.";
+        }
+    } else {
+        // Gestion de l'erreur d'insertion du responsable
+        echo "Erreur lors de la création du responsable.";
+    }
+}
+
 // Traitement du formulaire pour modifier une activité
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
     // Vérifier si 'activiteId' est défini dans $_POST
@@ -99,12 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
         $activiteId = $_POST['activiteId'];
         $newActivityTitle = $_POST['newActivityTitle'];
         $newActivityDescription = $_POST['newActivityDescription'];
+        $newResponsable = $_POST['newResponsable'];
 
         // Vous devez ajuster la requête UPDATE en fonction de votre structure de base de données
-        $queryUpdateActivity = "UPDATE activité SET NomAct = :newActivityTitle, Description = :newActivityDescription WHERE id_activité = :activiteId";
+        $queryUpdateActivity = "UPDATE activité SET NomAct = :newActivityTitle, Description = :newActivityDescription, num_resp = :newResponsable WHERE id_activité = :activiteId";
         $stmtUpdateActivity = $pdo->prepare($queryUpdateActivity);
         $stmtUpdateActivity->bindParam(':newActivityTitle', $newActivityTitle);
         $stmtUpdateActivity->bindParam(':newActivityDescription', $newActivityDescription);
+        $stmtUpdateActivity->bindParam(':newResponsable', $newResponsable);
         $stmtUpdateActivity->bindParam(':activiteId', $activiteId);
 
         if ($stmtUpdateActivity->execute()) {
@@ -120,6 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyActivity'])) {
         echo "<script>alert('Erreur : identifiant de l\'activité non spécifié.');</script>";
     }
 }
+
 
 // Traitement du formulaire de modification du participant
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['modifyParticipant'])) {
@@ -281,16 +324,13 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
             </div>
             <div class="absolute inset-0 bg-black/80 block from-black to-transparent"></div>
             <div class="relative text-white container flex flex-col justify-center p-6 mx-auto sm:py-12 lg:py-24 lg:flex-row">
-                <div class="flex items-center justify-center lg:mt-0 h-72 sm:h-80 lg:h-96 xl:h-112 2xl:h-128">
-                    <img src="https://doodleipsum.com/800x600/flat?sat=-100&i=043f407e725ebf28cb451445da864159" alt="" class="object-contain h-72 sm:h-80 lg:h-96 xl:h-112 2xl:h-128">
-                </div>
                 <div class="flex flex-col justify-center p-6 text-center rounded-sm lg:max-w-md xl:max-w-lg lg:text-left">
                     <h1 class="text-4xl md:text-5xl font-bold leadi sm:text-6xl">Panneau de contrôle complet de l'administration.</h1>
                     <p class="mt-6 mb-8 text-lg sm:mb-12">Soyez le maître d'orchestre de l'action en gérant avec assurance les participants et les activités.</p>
                     <div class="flex flex-col md:flex-row gap-5 w-full">
                         <button 
                             onclick="scrollToNextSection()"
-                            class="w-full md:w-1/2 px-8 py-3 text-lg font-semibold rounded bg-[#393646] text-gray-50 transition ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105 duration-300"
+                            class="w-full md:w-1/2 px-8 py-3 text-lg font-semibold rounded bg-[#E84545] text-gray-50 transition ease-in-out delay-150 md:hover:-translate-y-1 md:hover:scale-105 duration-300"
                         >
                             <span>Lire plus</span>
                         </button>
@@ -305,25 +345,25 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
         </div>
     </header>
 
-    <main id="main" class="p-6 py-12 bg-[#000500] text-white">
+    <main id="main" class="p-6 bg-[#000500] text-white">
         <!-- Liste des créations / affectations -->
-        <div class="container mx-auto px-6 pb-6">
-            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#4F4557]">Les créations</span> et affectations</h1>
+        <div class="container mx-auto">
+            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#E84545]">Les créations</span> et affectations</h1>
             <p class="text-lg font-normal lg:text-xl text-gray-400">Créez des activités et créneaux puis affecter leurs des responsables.</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                 <!-- Formulaire pour créer une activité -->
-                <form method="post" class="flex flex-col bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                <form method="post" class="flex flex-col bg-[#2B2E4A] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
                     <div class='relative md:h-[2.5em]'>
-                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Crée une activité</div>
+                        <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest mb-2'>Crée une activité</div>
                         <div class='h-[1px] w-[98%] bg-white my-3'></div>
                     </div>
                     <div class="flex flex-col">
                         <label for="titre" class="text-md font-semibold mb-1">Titre</label>
-                        <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                        <input type="text" name="newActivityTitle" placeholder="Nouveau titre" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]">
                         <label for="description" class="text-md font-semibold my-1">Description</label>
-                        <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]"></textarea>
+                        <textarea name="newActivityDescription" placeholder="Nouvelle description" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]"></textarea>
                         <label for="responsable" class="text-md font-semibold my-1">Responsable</label>
-                        <select name="responsableId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                        <select name="responsableId" class="w-48 p-2 border border-[#FFF] rounded-md bg-[#2B2E4A]">
                             <!-- Vous devez ajuster la requête SELECT pour récupérer les responsables disponibles -->
                             <?php
                             $queryResponsables = "SELECT * FROM responsable";
@@ -334,7 +374,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                             ?>
                         </select>
                         <label for="creneau" class="text-md font-semibold my-1">Créneau</label>
-                        <select name="creneauId" class="w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]">
+                        <select name="creneauId" class="w-48 p-2 border border-[#FFF] rounded-md bg-[#2B2E4A]">
                             <!-- Vous devez ajuster la requête SELECT pour récupérer les créneaux disponibles -->
                             <?php
                             $queryCreneaux = "SELECT * FROM creneau";
@@ -348,57 +388,75 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                     </div>
                 </form>
 
-                <form method="post" class="flex flex-col bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                <form method="post" class="flex flex-col bg-[#2B2E4A] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
                     <div class='relative md:h-[2.5em]'>
-                        <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>Créer un créneau</div>
+                        <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest mb-2'>Créer un créneau</div>
                         <div class='h-[1px] w-[98%] bg-white my-3'></div>
                     </div>
                     <div class="flex flex-col">
                         <label for="heure_debut" class="text-md font-semibold my-1">Heure de début</label>
-                        <input type="time" id="heure_debut" name="newCreneauHeureDebut" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]" required><br>
+                        <input type="time" id="heure_debut" name="newCreneauHeureDebut" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]" required><br>
 
                         <label for="heure_fin" class="text-md font-semibold my-1">Heure de fin</label>
-                        <input type="time" id="heure_fin" name="newCreneauHeureFin" class="p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]" required><br>
+                        <input type="time" id="heure_fin" name="newCreneauHeureFin" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]" required><br>
 
                         <button type="submit" name="createCreneau" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-2 md:mt-28">Ajouter le créneau</button>
+                    </div>
+                </form>
+
+                <!-- Formulaire pour créer un responsable -->
+                <form method="post" class="flex flex-col bg-[#2B2E4A] shadow-lg rounded-lg p-5 overflow-hidden w-[95%] mx-auto">
+                    <div class='relative md:h-[2.5em]'>
+                        <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest mb-2'>Créer un responsable</div>
+                        <div class='h-[1px] w-[98%] bg-white my-3'></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="newRespName" class="text-md font-semibold my-1">Nom</label>
+                        <input type="text" name="newRespName" placeholder="Nouveau nom" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]">
+
+                        <label for="newRespFirstName" class="text-md font-semibold my-1">Prénom</label>
+                        <input type="text" name="newRespFirstName" placeholder="Nouveau prénom" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]">
+
+                        <label for="newRespLogin" class="text-md font-semibold my-1">Login</label>
+                        <input type="text" name="newRespLogin" placeholder="Nouveau login" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]">
+
+                        <label for="newRespPassword" class="text-md font-semibold my-1">Mot de passe</label>
+                        <input type="password" name="newRespPassword" placeholder="Nouveau mot de passe" class="p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]">
+
+                        <button type="submit" name="createResponsable" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded mt-5">Créer le responsable</button>
                     </div>
                 </form>
             </div>
         </div>
 
         <!-- Liste des activités et modification de leur créneau -->
-        <div class="container mx-auto px-6">
-            <h1 class="mb-4 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#6D5D6E]">Les activités</span> disponibles</h1>
+        <div class="container mx-auto">
+            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#E84545]">Les activités</span> disponibles</h1>
             <p class="text-lg font-normal lg:text-xl text-gray-400">Modifier ou supprimer les activités.</p>
-
-            <form class="mt-2">   
-                <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">Search</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                        </svg>
-                    </div>
-                    <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-[#F4EEE0] focus:border-[#F4EEE0]" placeholder="Rechercher des activités..." required>
-                    <button type="submit" class="md:block hidden text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
-                </div>
-            </form>
-
+            
             <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">            
                 <?php
                 while ($activiteResponsable = $stmtActivitesResponsable->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<li class='w-[95%] mx-auto'><div class='bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden'>";
+                    echo "<li class='w-[95%] mx-auto'><div class='bg-[#2B2E4A] shadow-lg rounded-lg p-5 overflow-hidden'>";
                     echo "<div class='relative md:h-[2.5em]'>
-                            <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>{$activiteResponsable['NomAct']}</div>
+                            <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest mb-2'>{$activiteResponsable['NomAct']}</div>
                             <div class='h-[1px] w-[98%] bg-white my-3'></div>
                           </div>";   
 
-                    echo "<form method='post' class='flex flex-col gap-2'>";
-                    echo "<input type='hidden' name='activiteId' value='{$activiteResponsable['id_activité']}'>";
-                    echo "<input type='text' name='newActivityTitle' value='{$activiteResponsable['NomAct']}' placeholder='Nouveau titre' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<textarea name='newActivityDescription' placeholder='Nouvelle description' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>{$activiteResponsable['Description']}</textarea>";
-                    echo "<button type='submit' name='modifyActivity' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Activité</button>";
-                    echo "</form>";
+                          echo "<form method='post' class='flex flex-col gap-2'>";
+                          echo "<input type='hidden' name='activiteId' value='{$activiteResponsable['id_activité']}'>";
+                          echo "<input type='text' name='newActivityTitle' value='{$activiteResponsable['NomAct']}' placeholder='Nouveau titre' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                          echo "<textarea name='newActivityDescription' placeholder='Nouvelle description' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>{$activiteResponsable['Description']}</textarea>";
+                          echo "<select name='newResponsable' class='w-48 p-2 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                          $queryResponsables = "SELECT * FROM responsable";
+                          $stmtResponsables = $pdo->query($queryResponsables);
+                          while ($responsable = $stmtResponsables->fetch(PDO::FETCH_ASSOC)) {
+                              $selected = ($responsable['num_resp'] == $activiteResponsable['num_resp']) ? 'selected' : '';
+                              echo "<option value='{$responsable['num_resp']}' $selected>{$responsable['Nom']} {$responsable['Prenom']}</option>";
+                          }
+                          echo "</select>";
+                          echo "<button type='submit' name='modifyActivity' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Activité</button>";
+                          echo "</form>";
 
                     // Formulaire pour la modification du créneau
                     echo "<div class='h-[1px] w-[98%] bg-white my-3'></div>";
@@ -408,10 +466,10 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                     // Vous devez ajuster la requête SELECT pour récupérer les créneaux disponibles
                     $queryCreneaux = "SELECT * FROM creneau";
                     $stmtCreneaux = $pdo->query($queryCreneaux);
-                    echo "<select name='creneauId' class='w-48 p-2 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
+                    echo "<select name='creneauId' class='w-48 p-2 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
                     while ($creneau = $stmtCreneaux->fetch(PDO::FETCH_ASSOC)) {
                         $selected = ($creneau['id_creneau'] == $activiteResponsable['id_creneau']) ? 'selected' : '';
-                        echo "<option value='{$creneau['id_creneau']}' {$selected} class='bg-[#4F4557]'>{$creneau['heure_debut']} - {$creneau['heure_fin']}</option>";
+                        echo "<option value='{$creneau['id_creneau']}' {$selected} class='bg-[#2B2E4A]'>{$creneau['heure_debut']} - {$creneau['heure_fin']}</option>";
                     }
                     echo "</select>";
                     echo "<button type='submit' name='modifyCreneau' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Créneau</button>";
@@ -422,22 +480,9 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
         </div>
 
         <!-- Liste des participants -->
-        <div class="container mx-auto px-6">
-            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#4F4557]">Les participants</span> inscrits au site</h1>
+        <div class="container mx-auto">
+            <h1 class="mb-4 mt-12 text-3xl font-extrabold text-white md:text-5xl lg:text-6xl"><span class="text-transparent bg-clip-text bg-[#E84545]">Les participants</span> inscrits au site</h1>
             <p class="text-lg font-normal lg:text-xl text-gray-400">Modifier les informations d'un participant, le banir d'une activité ou du site.</p>
-
-            <form class="mt-2">   
-                <label for="default-search" class="mb-2 text-sm font-medium sr-only text-white">Search</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                        <svg class="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                        </svg>
-                    </div>
-                    <input type="search" id="default-search" class="block w-full p-4 ps-10 text-sm border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-[#F4EEE0] focus:border-[#F4EEE0]" placeholder="Rechercher des participants..." required>
-                    <button type="submit" class="md:block hidden text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-[#6D5D6E] hover:bg-[#4F4557] focus:ring-[#4F4557]">Rechercher</button>
-                </div>
-            </form>
 
             <ul class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                 <?php
@@ -458,21 +503,21 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
 
                 // Parcourir le tableau des participants et afficher leurs activités
                 foreach ($participantActivities as $participantKey => $activities) {
-                    echo "<li class='md:w-full w-[95%] flex flex-col mx-auto bg-[#6D5D6E] shadow-lg rounded-lg p-5 overflow-hidden'>";
+                    echo "<li class='w-[95%] mx-auto'><div class='bg-[#2B2E4A] shadow-lg rounded-lg p-5 overflow-hidden'>";
                     echo "<div class='relative md:h-[2.5em]'>
-                            <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest mb-2'>{$activities[0]['nom']} {$activities[0]['prenom']} </div>
-                            <div class='text-xs font-bold uppercase text-[#F4EEE0] tracking-widest'>{$activities[0]['mail']}</div>
+                            <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest mb-2'>{$activities[0]['nom']} {$activities[0]['prenom']} </div>
+                            <div class='text-xs font-bold uppercase text-[#FFF] tracking-widest'>{$activities[0]['mail']}</div>
                           </div>";       
                             
                     // Modification des informations du participant
                     echo "<div class='h-[1px] w-[98%] bg-white my-3'></div>";
                     echo "<form method='post' class='flex flex-col gap-2'>";
                     echo "<input type='hidden' name='participantId' value='{$activities[0]['num_participant']}'>";
-                    echo "<input type='text' name='newParticipantName' value='{$activities[0]['nom']}' placeholder='Nouveau nom' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<input type='text' name='newParticipantFirstName' value='{$activities[0]['prenom']}' placeholder='Nouveau prénom' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<input type='text' name='newParticipantEmail' value='{$activities[0]['mail']}' placeholder='Nouveau e-mail' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<input type='text' name='newLogin' value='{$activities[0]['login']}' placeholder='Nouveau login' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
-                    echo "<input type='text' name='newPassword' value='{$activities[0]['mdp']}' placeholder='Nouveau mot de passe' class='p-2 w-48 border border-[#F4EEE0] rounded-md bg-[#6D5D6E]'>";
+                    echo "<input type='text' name='newParticipantName' value='{$activities[0]['nom']}' placeholder='Nouveau nom' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                    echo "<input type='text' name='newParticipantFirstName' value='{$activities[0]['prenom']}' placeholder='Nouveau prénom' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                    echo "<input type='text' name='newParticipantEmail' value='{$activities[0]['mail']}' placeholder='Nouveau e-mail' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                    echo "<input type='text' name='newLogin' value='{$activities[0]['login']}' placeholder='Nouveau login' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
+                    echo "<input type='text' name='newPassword' value='{$activities[0]['mdp']}' placeholder='Nouveau mot de passe' class='p-2 w-48 border border-[#FFF] rounded-md bg-[#2B2E4A]'>";
                     echo "<button type='submit' name='modifyParticipant' class='bg-green-500 hover:bg-green-600 text-white p-2 rounded'>Modifier Participant</button>";
                     echo "</form>";
                     echo "<div class='h-[0.5px] w-[98%] bg-white my-3'></div>";
@@ -498,7 +543,7 @@ $stmtParticipantsResponsable = $pdo->query($queryParticipantsResponsable);
                     echo "<input type='hidden' name='participantId' value='{$activities[0]['num_participant']}'>";
                     echo "<button type='submit' name='deleteParticipant' class='bg-red-500 hover:bg-red-600 text-white mb-2 p-2 rounded'>Supprimer participant</button>";
                     echo "</form>";
-                    echo "</li>";
+                    echo "</div></li>";
                 }
                 ?>
             </ul>
